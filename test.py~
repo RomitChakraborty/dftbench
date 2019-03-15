@@ -1,0 +1,42 @@
+#! /usr/bin/env python
+
+import subprocess, re, os, time, random
+
+# DFT functionals, dispersion corrections, basis sets, scf_initial guess
+
+
+# dft functionals
+
+r2 = ['b97-d3', 'revpbe', 'blyp', 'pbe']
+r3 = ['b97m-rv', 'ms1', 'ms2', 'm06-l', 'tpss']
+r4 = ['wb97x-v', 'wb97x-d3', 'wb97x-d', 'b3lyp', 'revpbe0']
+r4h = ['wb97m-v', 'wm05-d', 'm06-2x', 'tpssh']
+
+# dispersion corrections 
+
+dftd = ['d3_bj', 'd3_zero']
+
+# basis sets
+
+basis = ['6-31g', 'def2-TZVP', 'ugbs']
+
+# scf_initial guess
+
+scf_guess = ['sad', 'sadmo' , 'core' , 'gwh', 'read', 'basis2', 'fragmo']
+
+# metals
+
+
+t1 = ['Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn']
+
+print "First row transitional metals"
+
+for metal in t1:
+    print metal
+
+print 'DFT functionals of rung 2'
+
+for xc in r2:
+    print xc
+
+subprocess.call("submitSLURM h2.in", shell = True)

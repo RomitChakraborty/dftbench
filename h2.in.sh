@@ -1,0 +1,56 @@
+#!/bin/bash
+#SBATCH --job-name=h2.in.sh
+#SBATCH --time=336:00:00
+#SBATCH --partition=mhg
+#SBATCH --account=mhg
+#SBATCH --nodes=1
+#SBATCH --constraint=mhg_m256
+#SBATCH --ntasks-per-node=16
+#SBATCH --output=h2.err
+#SBATCH --error=h2.err
+
+. /global/home/users/$USER/.bashrc
+
+export QCTHREADS=16
+export OMP_NUM_THREADS=16
+
+rm $HOME/variables.txt
+set >> $HOME/variables.txt
+
+if [ ! -e $QCSCRATCH/ ]
+then
+   mkdir $QCSCRATCH/
+   chmod -R 777 $QCSCRATCH/
+fi
+
+cd $QCSCRATCH/
+
+if [ -e TMP ]
+then
+chmod 777 TMP
+fi
+
+mkdir h2.in20180502180705
+cp -r h2.in20180502180705 h2.in20180502180705.0/
+cp -r h2.in20180502180705 h2.in20180502180705.1/
+cp -r h2.in20180502180705 h2.in20180502180705.2/
+cp -r h2.in20180502180705 h2.in20180502180705.3/
+cp -r h2.in20180502180705 h2.in20180502180705.4/
+cp -r h2.in20180502180705 h2.in20180502180705.5/
+cp -r h2.in20180502180705 h2.in20180502180705.6/
+cp -r h2.in20180502180705 h2.in20180502180705.7/
+cp -r h2.in20180502180705 h2.in20180502180705.8/
+cp -r h2.in20180502180705 h2.in20180502180705.9/
+cp -r h2.in20180502180705 h2.in20180502180705.10/
+cp -r h2.in20180502180705 h2.in20180502180705.11/
+cp -r h2.in20180502180705 h2.in20180502180705.12/
+cp -r h2.in20180502180705 h2.in20180502180705.13/
+cp -r h2.in20180502180705 h2.in20180502180705.14/
+cp -r h2.in20180502180705 h2.in20180502180705.15/
+cp $HOME/bin/h2.in h2.in20180502180705qchem
+qchem -save -nt 16 h2.in20180502180705qchem h2.out20180502180705 h2.in20180502180705 > h2.err20180502180705
+cp h2.out20180502180705 $HOME/bin/h2.out
+cat h2.err20180502180705 >> $HOME/bin/h2.err
+rm -rf h2.in20180502180705*
+rm h2.out20180502180705
+rm h2.err20180502180705

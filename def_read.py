@@ -1,0 +1,291 @@
+#! /usr/bin/env python
+
+# Function defintions for reading QChem output
+
+import subprocess, re, os, time, random
+
+def freq(qc_out):
+    """ Read harmonic frequency in cm^-1"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.search("Frequency.*?(\d+\.\d+)", g)
+
+    if (m):
+        freq = float(m.group(1))
+    else:
+        freq = 0.0
+    return freq
+
+def h(qc_out):
+    """ Read Total Enthalpy(kcal/mol)"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.findall("Total Enthalpy.*?(\d+\.\d+)", g)#5 expected matches [Harm, Harm, Tosh, VPT2, VCI]
+    if (m):
+        m = [float(i) for i in m]
+        return m
+    else:
+        return [0.0, 0.0, 0.0, 0.0, 0.0]
+
+def s(qc_out):
+    """ Read Total Entropy(cal/mol)"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.findall("Total Entropy.*?(\d+\.\d+)", g)#5 expected matches [Harm, Harm, Tosh, VPT2, VCI]
+    if (m):
+        m = [float(i) for i in m]
+        return m
+    else: return [0.0, 0.0, 0.0, 0.0, 0.0]
+
+def r(qc_out):
+    """ Read r, the distance between two hydrogen atoms"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.search("Z-matrix Print:.*?H.*?(\d+\.\d+)", g, flags = re.DOTALL)
+    if (m):
+        return float(m.group(1))
+    else: 
+        return [0.0]
+
+def r_gen(qc_out):
+    """ Read r_gen, the distance between two atoms in a dimer"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.search("Z-matrix Print:.*?(\d+\.\d+)", g, flags = re.DOTALL)
+    if (m):
+        return float(m.group(1))
+    else: 
+        return [0.0]
+
+    
+# Anharmonic frequencies due to TOSH, VPT2, and VCI 4
+
+def tosh(qc_out):
+    """Read anharmonic frequencies - TOSH"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.search("TOSH.*?\d+.*?(\d+\.\d+)",g)
+    if (m):
+        return float(m.group(1))
+    else:
+        return 0.0
+
+def vpt2(qc_out):
+    """Read anharmonic frequencies - VPT2"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.search("VPT2.*?\d+.*?(\d+\.\d+)",g)
+    if (m):
+        return float(m.group(1))
+    else:
+        return 0.0
+
+def vci4(qc_out):
+    """Read anharmonic frequencies - VCI4"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.search("VCI.*?4.*?mode.*?\d+.*?(\d+\.\d+)",g)
+    if (m):
+        return float(m.group(1))
+    else:
+        return 0.0
+
+def tot_e(qc_out):
+    """Read total scf energy"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.search("Total energy in the final basis set.*?(-?\d+\.\d+)",g)
+    if m:
+        return float(m.group(1))
+    else:
+        return 0.0
+
+def fin_e(qc_out):
+    """Read final scf energy after geometry optimization"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.search("Final energy is.*?(-?\d+\.\d+)",g)
+    if m:
+        return float(m.group(1))
+    else:
+        return 0.0
+
+def dpl(qc_out):
+    """Read dipole moment (optimized) of a diatomic"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.findall("Dipole Moment \(Debye\).*?Z\s+(-?\d+\.\d+)", g, flags=re.DOTALL)
+    if m:
+        return float(m[-1])
+    else:
+        return 0.0
+
+def frz(qc_out):
+    """Read frozen term"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.search("Frozen Density \( FRZ \)\s+(-?\d+\.\d+)", g)
+    if m:
+        return(float(m.group(1)))
+    else:
+        return 0.0
+    
+def pol(qc_out):
+    """Read polarization term"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.search("Polarization \( POL \)\s+(-?\d+\.\d+)", g)
+    if m:
+        return(float(m.group(1)))
+    else:
+        return 0.0
+
+def rs_bsse(qc_out):
+    """Read Roothan step bsse"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.search("RS Basis set superposition error.*?(-?\d+\.\d+)", g)
+    if m:
+        return(float(m.group(1)))
+    else:
+        return 0.0
+
+def rs_ct(qc_out):
+    """Read Roothan charge transfer"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.search("RS Charge-transfer \( P\-CT = P\-DEL \+ P\-BSSE \)\s+(-?\d+\.\d+)", g)
+    if m:
+        return(float(m.group(1)))
+    else:
+        return 0.0
+
+def scf_bsse(qc_out):
+    """Read SCF bsse"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.search("SCF Basis set superposition error \( V\-BSSE \)\s+(-?\d+\.\d+)", g)
+    if m:
+        return(float(m.group(1)))
+    else:
+        return 0.0
+
+def scf_ct(qc_out):
+    """Read SCF charge transfer"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.search("SCF Charge\-transfer.*?(-?\d+\.\d+)", g)
+    if m:
+        return(float(m.group(1)))
+    else:
+        return 0.0
+
+def rs_tot(qc_out):
+    """Read RS Total"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.search("RS Total.*?(-?\d+\.\d+)", g)
+    if m:
+        return(float(m.group(1)))
+    else:
+        return 0.0
+
+def scf_tot(qc_out):
+    """Read RS Total"""
+    f = open(qc_out)
+    g = f.read()
+    f.close()
+    m = re.search("SCF Total.*?(-?\d+\.\d+)", g)
+    if m:
+        return(float(m.group(1)))
+    else:
+        return 0.0
+
+def r_opt_xyz(qcout):
+    """grab xyz coordinates from optimized geometry from qcout"""
+    f = open(qcout)
+    g = f.read()
+    m = re.search("OPTIMIZATION CONVERGED.*?Coordinates \(Angstroms\)(.*?)Z-matrix Print", g, flags=re.DOTALL)
+    if m:
+        coords =  m.group(1)
+        return coords
+    else: return False
+
+def r_opt_zm(qcout):
+    """grab Z-matrix for converged geometry from qcout"""
+    f = open(qcout)
+    g = f.read()
+    m = re.search("Z-matrix Print:\n(\$molecule.*?\$end)", g, flags=re.DOTALL)
+    if m:
+        return m.group(1)
+    else: return False 
+
+def r_rem(qcin):
+    """greb rem group from qcin"""
+    f = open(qcin)
+    g = f.read()
+    m = re.search(".*?(\$rem.*?\$end)", g, flags = re.DOTALL)
+    if m:
+        return m.group(1)
+    else: return False
+
+#grab genbasis from qcin
+
+def r_gbasis(qcin):
+    """Grab genbasis from qcin"""
+    f = open(qcin)
+    g = f.read()
+    
+    m = re.search("(\$basis.*?\$end)", g, flags = re.DOTALL)
+    if m:
+        return m.group(1)
+    else: return False
+
+def r_ct_ab(qcout):
+    """Reads electron tranfer from fragments a to b and viceversa (millielectrons)                           \
+                                                                                                              
+    Returns as first variable ct_ab and ct_ba"""
+    f = open(qcout)
+    g = f.read()
+    m = re.search("Electron transfer from fragment\(row\) to fragment\(col\).*?(-?\d+\.\d+).*?(-?\d+\.\d+).*?\
+(-?\d+\.\d+).*?(-?\d+\.\d+)\n", g, flags = re.DOTALL)
+    if m:
+        ct_ab = float(m.group(2))
+	ct_ba = float(m.group(3))
+        return ct_ab, ct_ba
+    else: return 0, 0
+
+def r_et_ab(qcout):
+    """Reads energy transfer (lowering) due to charge transfer from fragments a to b and viceversa (kJ/mol)  \
+                                                                                                              
+    Returns as first variable the grid superposition error, and then et_ab and et_ba"""
+
+    f = open(qcout)
+    g = f.read()
+    m = re.search("CT from fragment\(row\) to fragment\(col\).*?(-?\d+\.\d+).*?(-?\d+\.\d+).*?(-?\d+\.\d+).*?\
+(-?\d+\.\d+).*?(-?\d+\.\d+)\n", g, flags = re.DOTALL)
+    if m:
+        gsse = float(m.group(1))
+        et_ab = float(m.group(3))
+        et_ba = float(m.group(4))
+        return gsse, et_ab, et_ba
+    else: return 0, 0, 0
+

@@ -1,0 +1,3 @@
+This is a multi-thread run using 16 threads
+/global/home/groups-sw/mhg/qchem_ymao/qchem_ymao_debug/exe/qcprog.exe .h2.in20180502180705qchem.51529.qcin.1 /scratch/romitchak/h2.in20180502180705/
+/global/home/groups-sw/mhg/qchem_ymao/qchem_ymao_debug/exe/qcprog.exe .h2.in20180502180705qchem.51529.qcin.2 /scratch/romitchak/h2.in20180502180705/
