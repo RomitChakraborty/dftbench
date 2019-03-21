@@ -14,8 +14,12 @@ this writes qchem input for an assortment of density functionals for the given i
 
 Additional features:
 
+Has a read feature that parses your output. I focussed on EDA and frequency calculations to parse
+
 Changes elements in your input if you need them
+
 Changes bases (most of the available ones in qchem)
+
 Has this feature where you can also submit it to the queue bypassing the annoying submitSLURM command
 
 Bugfix:
