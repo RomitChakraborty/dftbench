@@ -1,5 +1,5 @@
 # dftbench
-Auxillliary python script for a custom DFT benchmark in QChem
+Auxillliary python script for a custom DFT benchmark within QChem
 
 To perform a dft benchmark
 
